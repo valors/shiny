@@ -1,0 +1,93 @@
+---
+title: "My Shiny App"
+output: ioslides_presentation
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## My Shiny App
+
+The mtcars dataset is a great way to practice linear regression skills. 
+
+My Shiny App has been created to help you on visualizing the outcome of your model according to variable selection.
+
+## Shiny App functionality
+
+Select independent variable and submit. The server calculations fit a linear model and return the resulting plot.
+
+```{r,eval=FALSE,echo=TRUE}
+server=function(input, output) {
+  model<- reactive({
+    varInput<-input$variable
+    colnum<-match(varInput,names(mtcars))
+    df<-data.frame(mpg=mtcars$mpg,mtcars[,colnum])
+    colnames(df)[2]<-varInput
+    fit<-lm(mpg~.,data=df)
+  })   
+  output$plot1<-renderPlot({
+    varInput<-input$variable
+    colnum<-match(varInput,names(mtcars))
+    df<-data.frame(mpg=mtcars$mpg,mtcars[,colnum])
+    colnames(df)[2]<-varInput
+    plot(df[,2],df$mpg,xlab=colnames(df)[2],ylab="mpg")
+    abline(model(),col="red",lwd=2)
+  })})
+```
+
+## Interactive Plot 
+```{r echo=FALSE}
+shinyApp(
+
+ui=fluidPage(
+  
+  # Application title
+  titlePanel("Linear regression of mpg by selected variable"),
+  
+  # Sidebar with a slider input 
+  sidebarLayout(
+    sidebarPanel(
+      h4("Select a variable and submit to calculate coefficients"),
+      selectInput("variable","Variable:", c("cyl","qsec","am")),
+      submitButton("Submit")
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      plotOutput("plot1")
+    )
+  )
+),
+
+server=function(input, output) {
+  data(mtcars)
+  model<- reactive({
+    varInput<-input$variable
+    colnum<-match(varInput,names(mtcars))
+    df<-data.frame(mpg=mtcars$mpg,mtcars[,colnum])
+    colnames(df)[2]<-varInput
+    fit<-lm(mpg~.,data=df)
+  })   
+
+  output$plot1<-renderPlot({
+    varInput<-input$variable
+    colnum<-match(varInput,names(mtcars))
+    df<-data.frame(mpg=mtcars$mpg,mtcars[,colnum])
+    colnames(df)[2]<-varInput
+    plot(df[,2],df$mpg,xlab=colnames(df)[2],
+         ylab="mpg")
+    abline(model(),col="red",lwd=2)
+  })
+  
+},
+)
+```
+
+## End
+
+Thank you for your attention.
+
+Feel free to visit the Github repo with all code detail at https://github.com/valors/shiny
+
